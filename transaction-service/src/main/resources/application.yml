@@ -1,0 +1,19 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: transaction-service
+
+# Dapr sidecar configuration.
+# When running locally with 'dapr run', the sidecar starts on localhost:3500 by default.
+# In Docker Compose (network_mode: service), the sidecar also uses localhost:3500.
+dapr:
+  http:
+    endpoint: ${DAPR_HTTP_ENDPOINT:http://localhost:3500}
+  accounting:
+    app-id: ${DAPR_ACCOUNTING_APP_ID:accounting-service}
+
+logging:
+  level:
+    com.banking: DEBUG

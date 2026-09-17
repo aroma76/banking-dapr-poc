@@ -1,0 +1,36 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: accounting-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/bankingdb}
+    username: ${DB_USERNAME:banking_user}
+    password: ${DB_PASSWORD:banking_pass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+  # Ensure JPA is initialized after the SQL scripts run
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    com.banking: DEBUG
+    org.springframework.transaction: DEBUG

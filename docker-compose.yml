@@ -1,0 +1,126 @@
+version: "3.9"
+
+# ============================================================
+#  Banking Withdrawal POC — Docker Compose
+#
+#  Containers:
+#    1. postgres            — PostgreSQL 15
+#    2. transaction-app     — Spring Boot Transaction Service (:8081)
+#    3. transaction-dapr    — Dapr sidecar for transaction-service (:3500)
+#    4. accounting-app      — Spring Boot Accounting Service (:8082)
+#    5. accounting-dapr     — Dapr sidecar for accounting-service (:3501)
+#    6. dapr-placement      — Dapr placement service (actor + service discovery)
+#
+#  Each app shares its network namespace with its Dapr sidecar
+#  (network_mode: "service:xxx") so the sidecar reaches the app via localhost.
+# ============================================================
+
+networks:
+  banking-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+
+services:
+
+  # ----------------------------------------------------------
+  # PostgreSQL
+  # ----------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: banking-postgres
+    environment:
+      POSTGRES_DB: bankingdb
+      POSTGRES_USER: banking_user
+      POSTGRES_PASSWORD: banking_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - banking-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banking_user -d bankingdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ----------------------------------------------------------
+  # Dapr Placement Service (enables service discovery)
+  # ----------------------------------------------------------
+  dapr-placement:
+    image: daprio/dapr:1.13.0
+    container_name: dapr-placement
+    command: ["./placement", "--port", "50005", "--log-level", "warn"]
+    ports:
+      - "50005:50005"
+    networks:
+      - banking-net
+
+  # ----------------------------------------------------------
+  # Transaction Service
+  # ----------------------------------------------------------
+  transaction-app:
+    build:
+      context: ./transaction-service
+      dockerfile: Dockerfile
+    container_name: transaction-app
+    ports:
+      - "8081:8081"
+    environment:
+      DAPR_HTTP_ENDPOINT: http://localhost:3500
+      DAPR_ACCOUNTING_APP_ID: accounting-service
+    networks:
+      - banking-net
+
+  transaction-dapr:
+    image: daprio/daprd:1.13.0
+    container_name: transaction-dapr
+    command:
+      - "./daprd"
+      - "--app-id=transaction-service"
+      - "--app-port=8081"
+      - "--dapr-http-port=3500"
+      - "--placement-host-address=dapr-placement:50005"
+      - "--log-level=info"
+    network_mode: "service:transaction-app"
+    depends_on:
+      - transaction-app
+      - dapr-placement
+
+  # ----------------------------------------------------------
+  # Accounting Service
+  # ----------------------------------------------------------
+  accounting-app:
+    build:
+      context: ./accounting-service
+      dockerfile: Dockerfile
+    container_name: accounting-app
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/bankingdb
+      DB_USERNAME: banking_user
+      DB_PASSWORD: banking_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  accounting-dapr:
+    image: daprio/daprd:1.13.0
+    container_name: accounting-dapr
+    command:
+      - "./daprd"
+      - "--app-id=accounting-service"
+      - "--app-port=8082"
+      - "--dapr-http-port=3501"
+      - "--placement-host-address=dapr-placement:50005"
+      - "--log-level=info"
+    network_mode: "service:accounting-app"
+    depends_on:
+      - accounting-app
+      - dapr-placement

@@ -1,0 +1,11 @@
+# Dapr configuration for Banking Withdrawal POC.
+# Service invocation between transaction-service and accounting-service
+# uses Dapr's built-in mDNS name resolution (default in self-hosted mode).
+# No additional components are required for this POC.
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: daprConfig
+spec:
+  nameResolution:
+    component: mdns

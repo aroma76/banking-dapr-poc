@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Banking Dapr POC — Project Timesheet (Sep 15 – Sep 25, 2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface2: #1e293b;
+      --surface3: #334155;
+      --border: rgba(99, 102, 241, 0.2);
+      --border-light: rgba(255, 255, 255, 0.08);
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --green: #10b981;
+      --green-light: #34d399;
+      --yellow: #f59e0b;
+      --yellow-light: #fbbf24;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --text: #f1f5f9;
+      --text-dim: #cbd5e1;
+      --muted: #94a3b8;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      padding: 2.5rem 1.2rem 4rem;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 85% 85%, rgba(16, 185, 129, 0.08), transparent);
+    }
+
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      animation: fadeDown 0.6s ease both;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: var(--accent2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.35rem 1rem;
+      border-radius: 99px;
+      margin-bottom: 1.1rem;
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+    h1 {
+      font-size: clamp(1.8rem, 4.5vw, 2.7rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+      margin-bottom: 0.6rem;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .deadline-chip {
+      display: inline-block;
+      margin-top: 0.8rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--green-light);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem 0.8rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* SUMMARY CARDS */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+    }
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent2), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 0.35rem;
+      font-weight: 600;
+    }
+
+    /* OVERALL PROGRESS */
+    .overall-progress {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2.2rem;
+      animation: fadeUp 0.6s 0.15s ease both;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .progress-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .progress-pct {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent2);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .progress-bar-bg {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 99px;
+      height: 9px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+
+    /* TABS */
+    .tabs-nav {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.8rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: var(--accent2);
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease both;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* DAY BLOCKS */
+    .days-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .day-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .day-block:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 6px 30px rgba(99, 102, 241, 0.08);
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.4rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      user-select: none;
+      gap: 1rem;
+    }
+    .day-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .day-num {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+    .d-done   { background: rgba(16, 185, 129, 0.2); color: var(--green-light); border: 1px solid rgba(16, 185, 129, 0.4); }
+    .d-prog   { background: rgba(245, 158, 11, 0.2); color: var(--yellow-light); border: 1px solid rgba(245, 158, 11, 0.4); }
+    .d-todo   { background: rgba(99, 102, 241, 0.18); color: var(--accent2); border: 1px solid rgba(99, 102, 241, 0.3); }
+    .d-mile   { background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.4); }
+    .d-final  { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .day-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .day-focus {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .day-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-shrink: 0;
+    }
+    .day-hours {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent2);
+      background: rgba(99, 102, 241, 0.12);
+      padding: 0.3rem 0.75rem;
+      border-radius: 99px;
+    }
+    .chevron {
+      color: var(--muted);
+      font-size: 0.8rem;
+      transition: transform 0.3s;
+    }
+    .day-block.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+    .day-block.collapsed .task-table {
+      display: none;
+    }
+
+    /* TASK TABLE */
+    .task-table {
+      width: 100%;
+    }
+    .task-row {
+      display: grid;
+      grid-template-columns: 3.2fr 0.9fr 0.9fr;
+      align-items: center;
+      padding: 0.95rem 1.4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      gap: 0.8rem;
+      transition: background 0.15s;
+    }
+    .task-row:last-child {
+      border-bottom: none;
+    }
+    .task-row:hover {
+      background: rgba(99, 102, 241, 0.04);
+    }
+    .task-row.header-row {
+      padding: 0.6rem 1.4rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .task-row.header-row span {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .task-name {
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+    .task-name strong {
+      color: #fff;
+    }
+    .task-name small {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 0.2rem;
+      line-height: 1.4;
+    }
+    .task-phase {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.22rem 0.65rem;
+      border-radius: 6px;
+      text-align: center;
+      white-space: nowrap;
+      display: inline-block;
+      width: fit-content;
+      margin: 0 auto;
+    }
+    .phase-setup   { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+    .phase-code    { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+    .phase-test    { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    .phase-learn   { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+    .phase-demo    { background: rgba(236, 72, 153, 0.15); color: #f9a8d4; }
+    .phase-docs    { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; }
+    .phase-review  { background: rgba(20, 184, 166, 0.15); color: #5eead4; }
+    .phase-deliver { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+
+    .task-hours {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .status-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0.3rem 0.8rem;
+      border-radius: 99px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .status-btn.todo   { background: rgba(255, 255, 255, 0.06); color: var(--muted); }
+    .status-btn.inprog { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-btn.done   { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-btn:hover  { filter: brightness(1.2); transform: scale(1.03); }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* CARD COMPONENTS */
+    .spec-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .spec-card h2 {
+      font-size: 1.18rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .concept-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .concept-grid { grid-template-columns: 1fr; }
+      .task-row { grid-template-columns: 1fr; gap: 0.5rem; }
+      .task-row.header-row { display: none; }
+    }
+    .concept-box {
+      background: var(--surface2);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.2rem;
+    }
+    .concept-box.highlight {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .concept-box.problem {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .concept-box.info {
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.05);
+    }
+    .concept-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .concept-text {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* TABLES */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.8rem;
+    }
+    .data-table th, .data-table td {
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.83rem;
+      text-align: left;
+    }
+    .data-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .data-table tr:hover td {
+      background: rgba(99, 102, 241, 0.04);
+    }
+    .mono-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--accent2);
+    }
+
+    /* CODE BOX */
+    .code-box {
+      background: #070a12;
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #93c5fd;
+      line-height: 1.6;
+      margin-top: 0.8rem;
+      overflow-x: auto;
+    }
+
+    /* NOTES BOX */
+    .note-box {
+      background: rgba(99, 102, 241, 0.07);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 14px;
+      padding: 1.1rem 1.4rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.9rem;
+      margin-top: 2rem;
+    }
+    .note-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+      margin-top: 0.1rem;
+    }
+    .note-text {
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .note-text strong {
+      color: #fff;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+    .footer span {
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="badge"><span class="badge-dot"></span> Simple 2-Microservice Banking POC</div>
+      <h1>Banking Microservices Timesheet</h1>
+      <p class="subtitle">
+        Java Spring Boot · PostgreSQL · Dapr Service Invocation · Docker Compose (6 Containers)
+      </p>
+      <div class="deadline-chip">🎯 Target Completion Date: September 25, 2026 (9 Working Days)</div>
+    </div>
+
+    <!-- SUMMARY STATS -->
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="stat-value">9</div>
+        <div class="stat-label">Working Days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">9</div>
+        <div class="stat-label">Scheduled Days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Containers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="done-count">6</div>
+        <div class="stat-label">Tasks Done</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="total-count">33</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+    </div>
+
+    <!-- OVERALL PROGRESS BAR -->
+    <div class="overall-progress">
+      <div class="progress-header">
+        <span class="progress-title">🚀 Overall POC Progress (Sep 15 – Sep 25, 2026)</span>
+        <span class="progress-pct" id="pct-label">18%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="main-bar" style="width: 18%;"></div>
+      </div>
+    </div>
+
+    
+    <!-- IN PLAIN ENGLISH: WHAT AM I SUPPOSED TO DO? -->
+    <div class="spec-card" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(17, 24, 39, 0.9) 100%); border: 1px solid rgba(99, 102, 241, 0.4);">
+      <h2 style="color: #a5b4fc; font-size: 1.25rem;">📌 In Plain English: What Am I Supposed To Do?</h2>
+      <p style="color: var(--text-dim); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem;">
+        Here is the simple, jargon-free guide on what this project is, what you do each day, and what you show to your senior (Rajeev Ranjan).
+      </p>
+
+      <div class="concept-grid">
+        <div class="concept-box info">
+          <div class="concept-title" style="color: #93c5fd;">1. The Big Picture (What is this project?)</div>
+          <div class="concept-text">
+            You have a <strong>Bank Withdrawal System</strong> with two separate services:
+            <ul style="margin-left: 1.2rem; margin-top: 0.4rem; line-height: 1.6;">
+              <li><strong>Transaction Service:</strong> Accepts withdrawal requests from the user/Postman.</li>
+              <li><strong>Accounting Service:</strong> Only this service can touch the database. It checks the balance, locks the account row, and subtracts money.</li>
+              <li><strong>Dapr:</strong> Connects the two services without typing in hardcoded IP addresses or ports.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="concept-box highlight">
+          <div class="concept-title" style="color: var(--green-light);">2. The Two Real Problems You Solve</div>
+          <div class="concept-text">
+            <ul style="margin-left: 1.2rem; line-height: 1.6;">
+              <li><strong>No Negative Balance (Race Condition):</strong> If someone has ₹5,000 and two withdrawals of ₹3,000 happen at the exact same second, the database locks the row. First succeeds (₹2,000 left), second is rejected. Balance never drops below zero!</li>
+              <li><strong>No Double Deductions (Idempotency):</strong> If network retries the same request twice, the system recognizes the request ID and returns the cached answer instead of charging twice.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="concept-box highlight">
+          <div class="concept-title" style="color: #fcd34d;">3. What You Do Day-by-Day (Date Plan)</div>
+          <div class="concept-text">
+            <ul style="margin-left: 1.2rem; line-height: 1.6;">
+              <li><strong>Sep 15–16:</strong> Create the two Java projects and set up the 6 Docker containers.</li>
+              <li><strong>Sep 17:</strong> Connect them via direct HTTP first, then upgrade to Dapr. Add duplicate request protection.</li>
+              <li><strong>Sep 18:</strong> Add database row locking and test overdraft / missing accounts.</li>
+              <li><strong>Sep 21:</strong> Run the concurrency test sending simultaneous requests.</li>
+              <li><strong>Sep 22–24:</strong> Clean up code, write friendly logs, create README, practice cold start.</li>
+              <li><strong>Sep 25:</strong> Present the working demo to your senior and sign off!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="concept-box problem">
+          <div class="concept-title" style="color: #fca5a5;">4. What You Show In The Demo (Sep 25)</div>
+          <div class="concept-text">
+            In your 10-minute demo, you only need to show 3 things:
+            <ol style="margin-left: 1.2rem; line-height: 1.6; margin-top: 0.4rem;">
+              <li><strong>Docker:</strong> Show all 6 containers running green in Docker Desktop.</li>
+              <li><strong>Normal Withdrawal:</strong> Withdraw ₹500 via cURL and show balance is now ₹4,500.</li>
+              <li><strong>Concurrency Test:</strong> Fire two ₹3,000 requests together — show that 1 succeeds, 1 fails, and balance is ₹2,000 (never negative!).</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-daily')">📅 Day-by-Day Schedule (Sep 15 – 25)</button>
+      <button class="tab-btn" onclick="switchTab('tab-docker')">🐳 Docker & Communication Flow</button>
+      <button class="tab-btn" onclick="switchTab('tab-wbs')">📋 15-Task Work Breakdown</button>
+      <button class="tab-btn" onclick="switchTab('tab-concurrency')">🔒 Concurrency & Test Scenarios</button>
+    </div>
+
+    <!-- TAB 1: DAY-BY-DAY SCHEDULE -->
+    <div id="tab-daily" class="tab-pane active">
+      <div class="days-container">
+
+        <!-- DAY 1: Sep 15 (Tue) -->
+        <div class="day-block" id="day1">
+          <div class="day-header" onclick="toggleDay('day1')">
+            <div class="day-left">
+              <div class="day-num d-done">D1</div>
+              <div>
+                <div class="day-title">Day 1 — Tue, Sep 15: Understanding & Spring Boot Setup</div>
+                <div class="day-focus">Learn Dapr basics · Create Transaction Service & Accounting Service · Maven build</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 15 (Tue)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Understand POC goals & Dapr basics</strong>
+                <small>Read how Dapr sidecars route requests between microservices without hardcoding URLs.</small>
+              </div>
+              <span class="task-phase phase-learn">Learn</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Check prerequisites on local PC</strong>
+                <small>Verify Java 17, Docker Desktop, Maven, and IDE are installed and running.</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Create Transaction Service project</strong>
+                <small>Set up Spring Boot project with REST controller and Withdrawal request model (port 8081).</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Create Accounting Service project</strong>
+                <small>Set up Spring Boot project with Spring Data JPA and Account database model (port 8082).</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Configure application properties</strong>
+                <small>Set port 8081 for Transaction Service, port 8082 for Accounting Service, and DB credentials.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Verify Maven compilation locally</strong>
+                <small>Run Maven compile to make sure there are zero syntax or dependency errors.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 2: Sep 16 (Wed) -->
+        <div class="day-block" id="day2">
+          <div class="day-header" onclick="toggleDay('day2')">
+            <div class="day-left">
+              <div class="day-num d-prog">D2</div>
+              <div>
+                <div class="day-title">Day 2 — Wed, Sep 16: Docker Setup (Parting Out 6 Containers)</div>
+                <div class="day-focus">Write Dockerfiles · Add PostgreSQL & seed accounts · Part out Dapr sidecars</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 16 (Wed)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Write Dockerfiles for both services</strong>
+                <small>Create simple Dockerfile for each microservice using Java 17 lightweight base image.</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Configure Docker Compose: PostgreSQL (5432) & Placement (50005)</strong>
+                <small>Add banking-postgres and dapr-placement services on bridge network banking-net.</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Add test bank accounts in PostgreSQL</strong>
+                <small>Run database/init.sql to create accounts table: ACC001 (₹5,000) and ACC002 (₹10,000).</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn done" onclick="cycleStatus(this)"><span class="status-dot"></span>Done</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Part out Dapr sidecars in Docker Compose</strong>
+                <small>Add transaction-dapr (:3500) and accounting-dapr (:3501) sharing app network namespaces.</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn inprog" onclick="cycleStatus(this)"><span class="status-dot"></span>In Progress</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>First run: start all 6 containers with docker compose up</strong>
+                <small>Run docker compose up --build, verify all 6 containers start healthy and green in Docker Desktop.</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn inprog" onclick="cycleStatus(this)"><span class="status-dot"></span>In Progress</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 3: Sep 17 (Thu) -->
+        <div class="day-block" id="day3">
+          <div class="day-header" onclick="toggleDay('day3')">
+            <div class="day-left">
+              <div class="day-num d-todo">D3</div>
+              <div>
+                <div class="day-title">Day 3 — Thu, Sep 17: Direct HTTP First, Then Upgrade to Dapr</div>
+                <div class="day-focus">Step 1: Direct HTTP baseline · Step 2: Dapr Service Invocation · Idempotency</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 17 (Thu)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Step 1 (Direct HTTP): Connect services directly to test baseline</strong>
+                <small>Call 'http://accounting-app:8082' from Transaction Service to verify JSON models & basic deduction.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Implement withdrawal logic in Accounting Service</strong>
+                <small>Verify account exists, check if balance is sufficient, and deduct withdrawal amount.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Step 2 (Dapr Upgrade): Switch from direct HTTP to Dapr Invocation</strong>
+                <small>Update Transaction Service to call 'http://localhost:3500/v1.0/invoke/accounting-service/method/...'.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Add duplicate request check (Idempotency)</strong>
+                <small>Check requestId before deducting so sending the same request twice does not double-charge.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Manual happy path test via cURL</strong>
+                <small>Withdraw ₹500 from ACC001 via cURL, verify balance becomes ₹4,500 and transaction is logged.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 4: Sep 18 (Fri) -->
+        <div class="day-block" id="day4">
+          <div class="day-header" onclick="toggleDay('day4')">
+            <div class="day-left">
+              <div class="day-num d-mile">D4</div>
+              <div>
+                <div class="day-title">Day 4 — Fri, Sep 18: Database Row Locking & Week 1 Review</div>
+                <div class="day-focus">Add SELECT FOR UPDATE lock · Test overdraft & invalid account · Week 1 check</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 18 (Fri)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Understand concurrency in banking</strong>
+                <small>Learn why 2 simultaneous withdrawals on the same account can cause negative balances.</small>
+              </div>
+              <span class="task-phase phase-learn">Learn</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Add database lock (SELECT ... FOR UPDATE)</strong>
+                <small>Use pessimistic write lock on account row so simultaneous requests wait in queue.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Test insufficient balance (Overdraft)</strong>
+                <small>Try withdrawing ₹10,000 from ACC001 (balance ₹4,500) — verify clean 400 error.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Test non-existent account ID</strong>
+                <small>Try withdrawing from ACC999 — verify 404 Account Not Found response.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Week 1 review & progress check</strong>
+                <small>Verify both services compile, restart Docker stack cleanly, draft notes for mentor.</small>
+              </div>
+              <span class="task-phase phase-review">Review</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 5: Sep 21 (Mon) -->
+        <div class="day-block" id="day5">
+          <div class="day-header" onclick="toggleDay('day5')">
+            <div class="day-left">
+              <div class="day-num d-todo">D5</div>
+              <div>
+                <div class="day-title">Day 5 — Mon, Sep 21: Concurrency Testing</div>
+                <div class="day-focus">Write test-poc.ps1 · Send 2 simultaneous withdrawals · Verify zero negative balance</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 21 (Mon)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Create simple concurrency test script</strong>
+                <small>Write a short script (test-poc.ps1) to fire 2 withdrawal requests at the exact same second.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Run concurrent withdrawal test</strong>
+                <small>Send two simultaneous ₹3,000 requests for ACC001 (balance ₹5,000). Confirm 1 succeeds, 1 fails.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Test duplicate request under concurrency</strong>
+                <small>Send identical requestId simultaneously, verify duplicate is blocked safely without double deduction.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Inspect PostgreSQL database records</strong>
+                <small>Query withdrawal_transactions table to confirm full audit log of all transactions.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 6: Sep 22 (Tue) -->
+        <div class="day-block" id="day6">
+          <div class="day-header" onclick="toggleDay('day6')">
+            <div class="day-left">
+              <div class="day-num d-todo">D6</div>
+              <div>
+                <div class="day-title">Day 6 — Tue, Sep 22: Code Cleanup & Friendly Logs</div>
+                <div class="day-focus">Remove dead code · Add clear log messages · Test Swagger UI on both ports</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 22 (Tue)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Clean up code & format files</strong>
+                <small>Remove unused imports, delete old commented-out lines, and keep classes simple.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Add helpful, simple log messages</strong>
+                <small>Add logs like '[Transaction] Calling Dapr...' and '[Accounting] Row locked, balance deducted'.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Re-run all tests after code cleanup</strong>
+                <small>Make sure everything still works perfectly after cleaning up code and adding logs.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Verify Swagger UI documentation</strong>
+                <small>Check interactive Swagger UI on both services (ports 8081 and 8082) in the browser.</small>
+              </div>
+              <span class="task-phase phase-setup">Setup</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 7: Sep 23 (Wed) -->
+        <div class="day-block" id="day7">
+          <div class="day-header" onclick="toggleDay('day7')">
+            <div class="day-left">
+              <div class="day-num d-todo">D7</div>
+              <div>
+                <div class="day-title">Day 7 — Wed, Sep 23: Easy README & Architecture Flow</div>
+                <div class="day-focus">Write simple README.md · Add visual architecture diagram · Clean git repository</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 23 (Wed)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Write beginner-friendly README.md</strong>
+                <small>Write clear instructions: what the POC does, prerequisites, and how to run with Docker.</small>
+              </div>
+              <span class="task-phase phase-docs">Docs</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Add simple architecture diagram</strong>
+                <small>Add a clear diagram showing: User → Transaction Service → Dapr → Accounting Service → PostgreSQL.</small>
+              </div>
+              <span class="task-phase phase-docs">Docs</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Test README instructions step-by-step</strong>
+                <small>Follow the README from start to finish on a clean terminal to ensure anyone can run it easily.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Organize project files & .gitignore</strong>
+                <small>Clean up folder, make sure no temporary logs or compiled binaries are tracked in git.</small>
+              </div>
+              <span class="task-phase phase-docs">Docs</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 8: Sep 24 (Thu) -->
+        <div class="day-block" id="day8">
+          <div class="day-header" onclick="toggleDay('day8')">
+            <div class="day-left">
+              <div class="day-num d-todo">D8</div>
+              <div>
+                <div class="day-title">Day 8 — Thu, Sep 24: Cold Restart & Demo Practice</div>
+                <div class="day-focus">Cold restart test · Verify 5/5 test cases · Prepare demo talking points</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 24 (Thu)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Cold restart test from zero</strong>
+                <small>Run 'docker compose down -v' followed by 'docker compose up --build' to test cold startup.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Run complete 5-test checklist</strong>
+                <small>Normal withdrawal, duplicate check, overdraft, invalid account, concurrency test.</small>
+              </div>
+              <span class="task-phase phase-test">Test</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Prepare demo talking points for senior</strong>
+                <small>Prepare simple answers for: 'Why Dapr?' and 'Why pessimistic locking?'.</small>
+              </div>
+              <span class="task-phase phase-demo">Demo</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Practice demo walkthrough</strong>
+                <small>Rehearse explaining the architecture, showing Docker Desktop, and running test commands.</small>
+              </div>
+              <span class="task-phase phase-demo">Demo</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAY 9: Sep 25 (Fri) -->
+        <div class="day-block" id="day9">
+          <div class="day-header" onclick="toggleDay('day9')">
+            <div class="day-left">
+              <div class="day-num d-final">D9</div>
+              <div>
+                <div class="day-title">Day 9 — Fri, Sep 25: Live Demo Walkthrough & POC Sign-Off</div>
+                <div class="day-focus">Live demo to Rajeev Ranjan · Collect feedback · Final project handover</div>
+              </div>
+            </div>
+            <div class="day-right">
+              <span class="day-hours">Sep 25 (Fri)</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="task-table">
+            <div class="task-row header-row">
+              <span>Task & Simple Description</span>
+              <span style="text-align:center">Phase</span>
+              <span style="text-align:center">Status</span>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Morning system check & warm-up run</strong>
+                <small>Start Docker stack, confirm all 6 containers are green, and run a quick test call.</small>
+              </div>
+              <span class="task-phase phase-demo">Demo</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>LIVE POC DEMO TO SENIOR (Rajeev Ranjan)</strong>
+                <small>Walkthrough 2 microservices, Dapr communication, and demonstrate concurrency protection.</small>
+              </div>
+              <span class="task-phase phase-demo">Demo</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Collect feedback & answer senior questions</strong>
+                <small>Note down any suggestions or questions from senior during the demo.</small>
+              </div>
+              <span class="task-phase phase-review">Review</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Minor post-demo tweaks</strong>
+                <small>Make any small adjustments requested by senior during the demo.</small>
+              </div>
+              <span class="task-phase phase-code">Code</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+            <div class="task-row">
+              <div class="task-name">
+                <strong>Final POC handover & sign-off</strong>
+                <small>Package project files, share final README and timesheet with senior. Official POC complete!</small>
+              </div>
+              <span class="task-phase phase-deliver">Deliver</span>
+              <button class="status-btn todo" onclick="cycleStatus(this)"><span class="status-dot"></span>To Do</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: DOCKER & COMMUNICATION FLOW -->
+    <div id="tab-docker" class="tab-pane">
+      <div class="spec-card">
+        <h2>🐳 Docker Breakdown — The 6 Containers Parted Out</h2>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5;">
+          The system runs in Docker Compose as <strong>6 lightweight containers</strong> connected on the bridge network <code>banking-net</code>:
+        </p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Container Name</th>
+              <th>Tech / Image</th>
+              <th>Port</th>
+              <th>Network Mode</th>
+              <th>Purpose & Working Mechanism</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mono-chip">1</span></td>
+              <td><strong>banking-postgres</strong></td>
+              <td>PostgreSQL 15 Alpine</td>
+              <td><code>5432</code></td>
+              <td><code>banking-net</code></td>
+              <td>Single database. Stores <code>accounts</code> (balances) & <code>withdrawal_transactions</code> (audit). Seeds ACC001 (₹5,000) on startup.</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">2</span></td>
+              <td><strong>dapr-placement</strong></td>
+              <td>daprio/dapr:1.13.0</td>
+              <td><code>50005</code></td>
+              <td><code>banking-net</code></td>
+              <td>Dapr runtime directory router. Lets sidecars discover each other dynamically without hardcoded IPs.</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">3</span></td>
+              <td><strong>transaction-app</strong></td>
+              <td>Spring Boot (Java 17)</td>
+              <td><code>8081</code></td>
+              <td><code>banking-net</code></td>
+              <td>Microservice 1: Client entry point. Validates withdrawal request, then calls Dapr sidecar on <code>localhost:3500</code>.</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">4</span></td>
+              <td><strong>transaction-dapr</strong></td>
+              <td>daprio/daprd:1.13.0</td>
+              <td><code>3500</code></td>
+              <td><code>service:transaction-app</code></td>
+              <td>Sidecar for Microservice 1: Shares network with <code>transaction-app</code>, intercepts calls to <code>accounting-service</code>.</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">5</span></td>
+              <td><strong>accounting-app</strong></td>
+              <td>Spring Boot (Java 17)</td>
+              <td><code>8082</code></td>
+              <td><code>banking-net</code></td>
+              <td>Microservice 2: Owns PostgreSQL. Runs row lock (<code>SELECT ... FOR UPDATE</code>) and deducts balance safely.</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">6</span></td>
+              <td><strong>accounting-dapr</strong></td>
+              <td>daprio/daprd:1.13.0</td>
+              <td><code>3501</code></td>
+              <td><code>service:accounting-app</code></td>
+              <td>Sidecar for Microservice 2: Shares network with <code>accounting-app</code>, forwards received calls to <code>localhost:8082</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note-box" style="margin-top: 1.5rem;">
+          <span class="note-icon">💡</span>
+          <div class="note-text">
+            <strong>Key Docker Trick — Sidecar Network Sharing (<code>network_mode: service:...</code>):</strong><br>
+            Instead of giving each Dapr sidecar its own network, each sidecar shares the exact network stack of its Spring Boot app. This means <code>transaction-app</code> calls <code>http://localhost:3500</code>, and <code>accounting-dapr</code> forwards to <code>http://localhost:8082</code> locally!
+          </div>
+        </div>
+
+        <h2 style="margin-top: 2rem;">🏗️ Visual Architecture Diagram</h2>
+        <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-top: 1rem; overflow-x: auto;">
+          <pre class="mermaid">
+graph TD
+    classDef clientStyle fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff;
+    classDef appStyle fill:#6366f1,stroke:#4338ca,stroke-width:2px,color:#fff;
+    classDef daprStyle fill:#ec4899,stroke:#be185d,stroke-width:2px,color:#fff;
+    classDef dbStyle fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff;
+    classDef discoveryStyle fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff;
+
+    Client["Client (cURL / Postman / Browser)"]:::clientStyle
+
+    subgraph DockerHost ["Docker Compose Stack (Bridge Network: banking-net)"]
+        subgraph TransPod ["Transaction Namespace (network_mode: service:transaction-app)"]
+            TransApp["Container: transaction-app<br/>Spring Boot REST API<br/>Port: 8081"]:::appStyle
+            TransDapr["Container: transaction-dapr<br/>Dapr Sidecar<br/>Port: 3500 (HTTP)"]:::daprStyle
+        end
+
+        Placement["Container: dapr-placement<br/>mDNS & Placement Directory<br/>Port: 50005"]:::discoveryStyle
+
+        subgraph AcctPod ["Accounting Namespace (network_mode: service:accounting-app)"]
+            AcctDapr["Container: accounting-dapr<br/>Dapr Sidecar<br/>Port: 3501 (HTTP)"]:::daprStyle
+            AcctApp["Container: accounting-app<br/>Spring Boot Banking Engine<br/>Port: 8082"]:::appStyle
+        end
+
+        Postgres["Container: banking-postgres<br/>PostgreSQL 15 Database<br/>Port: 5432<br/>(accounts & transactions)"]:::dbStyle
+    end
+
+    Client -->|"1. POST /api/v1/transactions/withdraw"| TransApp
+    TransApp -->|"2. Local HTTP: http://localhost:3500/v1.0/invoke/..."| TransDapr
+    TransDapr -.->|"Discovery lookup"| Placement
+    TransDapr ==>|"3. Dapr routing over banking-net"| AcctDapr
+    AcctDapr -->|"4. Local HTTP: http://localhost:8082/..."| AcctApp
+    AcctApp -->|"5. SELECT ... FOR UPDATE (Row Lock) & Deduct"| Postgres
+          </pre>
+        </div>
+
+        <div class="note-box" style="margin-top: 1rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.06);">
+          <span class="note-icon">📐</span>
+          <div class="note-text">
+            <strong>Ready-to-Open Draw.io (.drawio) Diagram Available:</strong><br>
+            • <strong>Unified Architecture (HLD + LLD in One View):</strong> <code>architecture.drawio</code><br>
+            <em>Tip: Open at <a href="https://app.diagrams.net/" target="_blank" style="color:var(--accent2);">app.diagrams.net</a> or directly inside VS Code with the Draw.io extension!</em>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 2rem;">🔄 How Microservices Communicate — Step-by-Step Evolution</h2>
+        <div class="concept-grid">
+          <div class="concept-box info">
+            <div class="concept-title" style="color: #93c5fd;">Step 1: Direct HTTP (Starting Baseline)</div>
+            <div class="concept-text">
+              First, we connected the services using standard Spring <code>RestTemplate</code>:<br>
+              <div class="code-box">
+POST http://accounting-app:8082/api/v1/accounting/withdraw
+              </div>
+              <br>
+              <strong>Why we did this first:</strong>
+              <ul style="margin-left: 1.2rem; margin-top: 0.3rem;">
+                <li>Proved the withdrawal calculation, JSON payloads, and PostgreSQL updates worked.</li>
+                <li>Zero extra dependencies needed for the first baseline test.</li>
+              </ul>
+              <br>
+              <strong style="color:#f87171;">Drawback:</strong> Tight coupling! Transaction Service had to know <code>accounting-app:8082</code>.
+            </div>
+          </div>
+
+          <div class="concept-box highlight">
+            <div class="concept-title" style="color: var(--green-light);">Step 2: Upgrading to Dapr Service Invocation</div>
+            <div class="concept-text">
+              Once direct HTTP worked, we switched to Dapr Service Invocation:<br>
+              <div class="code-box">
+POST http://localhost:3500/v1.0/invoke/accounting-service/method/api/v1/accounting/withdraw
+              </div>
+              <br>
+              <strong>What changed:</strong>
+              <ul style="margin-left: 1.2rem; margin-top: 0.3rem;">
+                <li>Transaction Service only needs to know the app-id <code>accounting-service</code>.</li>
+                <li>Dapr handles service discovery, routing across containers, and retries.</li>
+                <li>Zero hardcoded hostnames or ports in Java code!</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <table class="data-table" style="margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Step 1: Direct HTTP (Initial)</th>
+              <th>Step 2: Dapr Invocation (Final POC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Target Address</strong></td>
+              <td><code>http://accounting-app:8082/...</code> (hardcoded)</td>
+              <td><code>http://localhost:3500/v1.0/invoke/accounting-service/...</code></td>
+            </tr>
+            <tr>
+              <td><strong>Service Discovery</strong></td>
+              <td>Manual Docker DNS / container name</td>
+              <td>Handled automatically by Dapr runtime</td>
+            </tr>
+            <tr>
+              <td><strong>Coupling</strong></td>
+              <td>High (caller knows callee's port & host)</td>
+              <td>Zero (caller only knows logical app-id)</td>
+            </tr>
+            <tr>
+              <td><strong>Resilience / Retries</strong></td>
+              <td>Must write custom Spring retry code</td>
+              <td>Built into Dapr sidecar automatically</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: WBS -->
+    <div id="tab-wbs" class="tab-pane">
+      <div class="wbs-card">
+        <table class="wbs-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">ID</th>
+              <th>Task Name (Beginner Friendly)</th>
+              <th style="text-align:center;">Phase</th>
+              <th style="text-align:center;">Planned Day</th>
+              <th style="text-align:center;">Priority</th>
+              <th>Concurrency / Banking Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="wbs-badge">T01</span></td>
+              <td><strong>Understand POC goals and learn Dapr basics</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-learn">Learn</span></td>
+              <td style="text-align:center;">Day 1 (Sep 15)</td>
+              <td style="text-align:center;"><span class="prio-high">HIGH</span></td>
+              <td>Underpins how microservices communicate via sidecars</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T02</span></td>
+              <td><strong>Verify local prerequisites: Java 17, Docker Desktop, IDE</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-setup">Setup</span></td>
+              <td style="text-align:center;">Day 1 (Sep 15)</td>
+              <td style="text-align:center;"><span class="prio-high">HIGH</span></td>
+              <td>Ensures Docker engine is ready for all 6 containers</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T03</span></td>
+              <td><strong>Create Transaction Service Spring Boot project</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-code">Code</span></td>
+              <td style="text-align:center;">Day 1 (Sep 15)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Exposes /api/v1/transactions/withdraw endpoint</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T04</span></td>
+              <td><strong>Create Accounting Service Spring Boot project with JPA</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-code">Code</span></td>
+              <td style="text-align:center;">Day 1 (Sep 15)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Manages Account entity and PostgreSQL transactions</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T05</span></td>
+              <td><strong>Write Dockerfiles & configure PostgreSQL in Docker Compose</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-setup">Setup</span></td>
+              <td style="text-align:center;">Day 2 (Sep 16)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Initializes database schema and seed accounts (ACC001)</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T06</span></td>
+              <td><strong>Part out 6 containers in Docker Compose (apps + sidecars + placement)</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-setup">Setup</span></td>
+              <td style="text-align:center;">Day 2 (Sep 16)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Uses network_mode: service:xxx for app-sidecar sharing</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T07</span></td>
+              <td><strong>Step 1: Test Direct HTTP communication between microservices</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-code">Code</span></td>
+              <td style="text-align:center;">Day 3 (Sep 17)</td>
+              <td style="text-align:center;"><span class="prio-high">HIGH</span></td>
+              <td>Proves baseline withdrawal logic works via direct REST call</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T08</span></td>
+              <td><strong>Step 2: Upgrade to Dapr Service Invocation & Idempotency check</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-code">Code</span></td>
+              <td style="text-align:center;">Day 3 (Sep 17)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Decouples services via sidecars; prevents duplicate requests</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T09</span></td>
+              <td><strong>Add database row lock (SELECT ... FOR UPDATE)</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-code">Code</span></td>
+              <td style="text-align:center;">Day 4 (Sep 18)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Locks account row so simultaneous withdrawals wait in line</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T10</span></td>
+              <td><strong>Manual testing: test normal withdrawal, overdraft & wrong account</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-test">Test</span></td>
+              <td style="text-align:center;">Day 4 (Sep 18)</td>
+              <td style="text-align:center;"><span class="prio-high">HIGH</span></td>
+              <td>Validates proper HTTP responses (200, 400, 404)</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T11</span></td>
+              <td><strong>Test concurrency: run 2 simultaneous withdrawals to verify balance</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-test">Test</span></td>
+              <td style="text-align:center;">Day 5 (Sep 21)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Proves balance never goes below zero during race conditions</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T12</span></td>
+              <td><strong>Clean up code, remove unused imports & add friendly logs</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-code">Code</span></td>
+              <td style="text-align:center;">Day 6 (Sep 22)</td>
+              <td style="text-align:center;"><span class="prio-med">MEDIUM</span></td>
+              <td>Console logs clearly explain every transaction step during demo</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T13</span></td>
+              <td><strong>Write simple README.md with startup steps & architecture diagram</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-docs">Docs</span></td>
+              <td style="text-align:center;">Day 7 (Sep 23)</td>
+              <td style="text-align:center;"><span class="prio-high">HIGH</span></td>
+              <td>Provides clear instructions so anyone can run the POC easily</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T14</span></td>
+              <td><strong>End-to-end dry run: test cold startup & prepare talking points</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-demo">Demo</span></td>
+              <td style="text-align:center;">Day 8 (Sep 24)</td>
+              <td style="text-align:center;"><span class="prio-high">HIGH</span></td>
+              <td>Validates clean bootstrap and prepares clear answers for senior</td>
+            </tr>
+            <tr>
+              <td><span class="wbs-badge">T15</span></td>
+              <td><strong>Live demo walkthrough with senior & project handover</strong></td>
+              <td style="text-align:center;"><span class="task-phase phase-deliver">Deliver</span></td>
+              <td style="text-align:center;">Day 9 (Sep 25)</td>
+              <td style="text-align:center;"><span class="prio-critical">CRITICAL</span></td>
+              <td>Demonstrates working POC and achieves official sign-off</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: CONCURRENCY & TESTS -->
+    <div id="tab-concurrency" class="tab-pane">
+      <div class="spec-card">
+        <h2>🔒 How Concurrency Protection Works (Easy Beginner Explanation)</h2>
+
+        <div class="concept-grid">
+          <div class="concept-box problem">
+            <div class="concept-title" style="color: #f87171;">⚠️ The Problem: Simultaneous Requests (Race Condition)</div>
+            <div class="concept-text">
+              Suppose Account <strong>ACC001</strong> has a balance of <strong>₹5,000</strong>.<br><br>
+              Two withdrawal requests for <strong>₹3,000</strong> arrive at the exact same millisecond. If we don't lock the account:
+              <ul style="margin-left: 1.2rem; margin-top: 0.5rem; line-height: 1.5;">
+                <li>Both requests read balance = ₹5,000 at the same time.</li>
+                <li>Both conclude there is enough money and deduct ₹3,000.</li>
+                <li>Final balance becomes <strong>-₹1,000</strong>! (Double spending bug).</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="concept-box highlight">
+            <div class="concept-title" style="color: var(--green-light);">✅ The Solution: Database Row Locking (SELECT ... FOR UPDATE)</div>
+            <div class="concept-text">
+              We use <code>@Lock(LockModeType.PESSIMISTIC_WRITE)</code> in Spring Data JPA:
+              <ul style="margin-left: 1.2rem; margin-top: 0.5rem; line-height: 1.5;">
+                <li>Request 1 begins and PostgreSQL <strong>locks</strong> the row for ACC001.</li>
+                <li>Request 2 arrives but must <strong>wait in line</strong> until Request 1 is done.</li>
+                <li>Request 1 deducts ₹3,000 (balance becomes ₹2,000) and commits.</li>
+                <li>Request 2 now reads balance = ₹2,000, sees ₹3,000 is not available, and is <strong>safely rejected</strong>!</li>
+              </ul>
+              The balance never drops below zero!
+            </div>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 1.5rem;">🧪 Beginner Test Scenarios (All Passed on Local Docker)</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Test Scenario</th>
+              <th>Starting Balance</th>
+              <th>Withdrawal Request</th>
+              <th>Expected Outcome</th>
+              <th>Final Balance</th>
+              <th>Validation Rule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mono-chip">TC-01</span></td>
+              <td>Single User Normal Withdrawal</td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹5,000.00</td>
+              <td>1 request for ₹500.00</td>
+              <td><span style="color:var(--green-light); font-weight:600;">HTTP 200 OK (SUCCESS)</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹4,500.00</td>
+              <td>Balance deducted by exactly ₹500, transaction recorded</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">TC-02</span></td>
+              <td>Duplicate Request Check (Idempotency)</td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹4,500.00</td>
+              <td>Send same requestId twice</td>
+              <td><span style="color:var(--green-light); font-weight:600;">1st: HTTP 200, 2nd: Cached HTTP 200</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹4,000.00</td>
+              <td>Second request returns saved result; NO double deduction</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">TC-03</span></td>
+              <td>Insufficient Balance (Overdraft)</td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹4,000.00</td>
+              <td>1 request for ₹10,000.00</td>
+              <td><span style="color:#f87171; font-weight:600;">HTTP 400 Bad Request (FAILED)</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹4,000.00</td>
+              <td>Balance untouched, friendly error 'Insufficient balance'</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">TC-04</span></td>
+              <td>Non-Existent Account ID</td>
+              <td style="font-family:'JetBrains Mono',monospace;">N/A</td>
+              <td>1 request for ACC999</td>
+              <td><span style="color:#f87171; font-weight:600;">HTTP 404 Not Found (FAILED)</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;">N/A</td>
+              <td>Clean error response, no database locks held open</td>
+            </tr>
+            <tr>
+              <td><span class="mono-chip">TC-05</span></td>
+              <td>Concurrent Withdrawal Safety Test</td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹5,000.00</td>
+              <td>2 simultaneous requests for ₹3,000</td>
+              <td><span style="color:var(--yellow-light); font-weight:600;">1x SUCCESS (200), 1x FAILED (400)</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;">₹2,000.00</td>
+              <td>Balance NEVER goes negative; exactly one request succeeds</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NOTE BOX -->
+    <div class="note-box">
+      <span class="note-icon">💡</span>
+      <div class="note-text">
+        <strong>Senior / Mentor Feedback Applied:</strong> This timesheet and documentation now reflect a clean, beginner-friendly 2-microservice POC schedule concluding under date <strong>September 25, 2026</strong>. It parts out the 6 Docker containers and explains how microservices first communicated via direct HTTP, and were then upgraded to Dapr Service Invocation.
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      Banking Dapr POC Timesheet · Concludes <span>September 25, 2026</span> · Reviewed for <span>Beginner / Trainee Level</span>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleDay(id) {
+      document.getElementById(id).classList.toggle('collapsed');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    const states = ['todo', 'inprog', 'done'];
+    const labels = { todo: 'To Do', inprog: 'In Progress', done: 'Done' };
+
+    function cycleStatus(btn) {
+      const cur = states.find(s => btn.classList.contains(s)) || 'todo';
+      const next = states[(states.indexOf(cur) + 1) % states.length];
+      btn.classList.remove(cur);
+      btn.classList.add(next);
+      btn.innerHTML = '<span class="status-dot"></span>' + labels[next];
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const allBtns = document.querySelectorAll('.status-btn');
+      const total = allBtns.length;
+      const done = [...allBtns].filter(b => b.classList.contains('done')).length;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      document.getElementById('pct-label').textContent = pct + '%';
+      document.getElementById('main-bar').style.width = pct + '%';
+      document.getElementById('done-count').textContent = done;
+      document.getElementById('total-count').textContent = total;
+    }
+
+    window.addEventListener('load', () => { updateProgress(); });
+  </script>
+</body>
+</html>
