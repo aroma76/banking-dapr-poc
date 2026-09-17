@@ -1,0 +1,170 @@
+{
+  "info": {
+    "_postman_id": "a9176444-38e4-4279-81e3-58be6b9e9846",
+    "name": "Banking Withdrawal POC - Test Suite",
+    "description": "Comprehensive test suite for Banking Withdrawal POC with Dapr Service Invocation, Atomic Concurrency, and Idempotency.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Successful Withdrawal (ACC001 - 1000 INR)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"ACC001\",\n  \"amount\": 1000,\n  \"currency\": \"INR\",\n  \"requestId\": \"REQ-001\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/transactions/withdraw",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "transactions",
+            "withdraw"
+          ]
+        },
+        "description": "Deducts 1000 INR from ACC001 (initial 5000). Expected: HTTP 200, remainingBalance: 4000."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Idempotency Check (Duplicate REQ-001)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"ACC001\",\n  \"amount\": 1000,\n  \"currency\": \"INR\",\n  \"requestId\": \"REQ-001\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/transactions/withdraw",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "transactions",
+            "withdraw"
+          ]
+        },
+        "description": "Sends REQ-001 again. Expected: HTTP 200 with same transactionId and NO duplicate deduction (balance stays 4000)."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Insufficient Balance (ACC001 - 9999 INR)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"ACC001\",\n  \"amount\": 9999,\n  \"currency\": \"INR\",\n  \"requestId\": \"REQ-002\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/transactions/withdraw",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "transactions",
+            "withdraw"
+          ]
+        },
+        "description": "Attempts to withdraw 9999 when balance is 4000. Expected: status FAILED, reason INSUFFICIENT_BALANCE."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Account Not Found (ACC999)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"ACC999\",\n  \"amount\": 500,\n  \"currency\": \"INR\",\n  \"requestId\": \"REQ-003\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/transactions/withdraw",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "transactions",
+            "withdraw"
+          ]
+        },
+        "description": "Attempts to withdraw from non-existent account. Expected: status FAILED, reason ACCOUNT_NOT_FOUND."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Validation Error (Negative Amount)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"ACC001\",\n  \"amount\": -100,\n  \"currency\": \"INR\",\n  \"requestId\": \"REQ-004\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/v1/transactions/withdraw",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "v1",
+            "transactions",
+            "withdraw"
+          ]
+        },
+        "description": "Validation check. Expected: HTTP 400 Bad Request, message 'amount must be greater than zero'."
+      },
+      "response": []
+    }
+  ]
+}
